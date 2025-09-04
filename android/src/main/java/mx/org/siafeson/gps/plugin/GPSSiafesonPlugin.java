@@ -102,7 +102,15 @@ public class GPSSiafesonPlugin extends Plugin implements LocationListener {
           ret.put("jumpDetected", isJumpDetected);
           ret.put("unrealisticSpeed", isSpeedUnrealistic);
 
-          notifyListeners("gpsData", ret);
+          // Asegurar que notifyListeners se ejecute en el hilo principal
+          if (Looper.myLooper() == Looper.getMainLooper()) {
+              notifyListeners("gpsData", ret);
+          } else {
+              // Si no estamos en el hilo principal, usar Handler para ejecutar en el hilo principal
+              new android.os.Handler(Looper.getMainLooper()).post(() -> {
+                  notifyListeners("gpsData", ret);
+              });
+          }
           Log.d("GPSSiafeson", "Datos GPS enviados: " + ret.toString());
       } catch (Exception e) {
           Log.e("GPSSiafeson", "Error al enviar ubicación", e);
